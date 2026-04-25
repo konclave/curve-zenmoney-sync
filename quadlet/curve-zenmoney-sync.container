@@ -1,0 +1,25 @@
+[Unit]
+Description=Curve to ZenMoney sync service
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=localhost/curve-zenmoney-sync:latest
+ContainerName=curve-zenmoney-sync
+
+# EnvironmentFile must be an absolute path.
+# setup.sh symlinks .env to /etc/curve-zenmoney-sync/.env (dir mode 0700, owner root).
+EnvironmentFile=/etc/curve-zenmoney-sync/.env
+
+PublishPort=3000:3000
+
+# AutoUpdate=local tells `podman auto-update` to check for locally rebuilt images
+# (i.e. images rebuilt via `podman build` rather than pulled from a registry).
+AutoUpdate=local
+
+[Service]
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

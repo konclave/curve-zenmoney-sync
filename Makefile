@@ -52,3 +52,6 @@ create-trigger:             ## One-time: create email trigger pointing at the fu
 
 logs:                       ## Tail live function logs
 	yc serverless function logs $(FUNCTION_NAME) --follow
+
+quadlet:                    ## Deploy quadlet service
+	cd quadlet && ./setup.sh
