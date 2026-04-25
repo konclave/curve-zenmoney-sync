@@ -6,7 +6,7 @@
 ._*
 
 # Custom folder icons
-Icon
+Icon
 
 # Volume root files
 .DocumentRevisions-V100
@@ -90,3 +90,6 @@ out/
 .yarn/unplugged
 .yarn/install-state.gz
 .pnp.*
+
+# Serverless deployment package
+/.serverless-package/
