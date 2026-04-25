@@ -1,51 +1,60 @@
 <!doctype html>
 <html>
 <body>
-  <center>
-    <table id="bodyTable">
+  <div><br></div>
+  <div>-- Regards, Test User.</div>
+  <div><br></div>
+  <div>----- Original message -----</div>
+  <div>From: support@imaginecurve.com</div>
+  <div>Subject: Curve Receipt: Purchase at Starbucks on 23 April 2026 for €8.09</div>
+  <div><br></div>
+  <!-- Mail client wraps the original email in a #qt div and prefixes all CSS
+       class names with "qt-" to namespace them against the surrounding page. -->
+  <div id="qt">
+    <table id="qt-bodyTable">
       <tr>
-        <td>
-          <table id="templateContainer">
+        <td id="qt-bodyCell">
+          <table id="qt-templateContainer">
             <tr>
-              <td id="ReceiptContainer">
+              <td id="qt-ReceiptContainer">
                 <table>
                   <tbody>
                     <tr>
-                      <td class="u-padding__bottom">
+                      <td class="qt-u-padding__bottom">
                         <h1>Email Receipt</h1>
                       </td>
                     </tr>
                     <tr>
-                      <td class="u-padding__topBottom u-border__top">
+                      <td class="qt-u-padding__topBottom qt-u-border__top">
                         Hello Test User,<br><br>You made a purchase at:
                       </td>
                     </tr>
                     <tr>
-                      <td class="u-padding__topBottom--half u-border__top">
+                      <td class="qt-u-padding__topBottom--half qt-u-border__top">
                         <table>
                           <tr>
-                            <td class="u-bold" align="left" style="font-weight: bold;">
+                            <td class="qt-u-bold" align="left" style="font-weight:bold;">
                               Starbucks
                             </td>
-                            <td class="u-bold" align="right" style="font-weight: bold;">
+                            <td class="qt-u-bold" align="right" style="font-weight:bold;">
                               €8.09
                             </td>
                           </tr>
                           <tr>
-                            <td class="u-greySmaller u-padding__top--half" align="left" style="color: #737373;">
+                            <td class="qt-u-greySmaller qt-u-padding__top--half" align="left" style="color:#737373;">
                               23 April 2026 10:02:18
                             </td>
-                            <td class="u-greySmaller u-padding__top--half" align="right" style="color: #737373;">
+                            <td class="qt-u-greySmaller qt-u-padding__top--half" align="right" style="color:#737373;">
                             </td>
                           </tr>
                         </table>
                       </td>
                     </tr>
                     <tr>
-                      <td class="u-padding__top u-border__top">On this card:</td>
+                      <td class="qt-u-padding__top qt-u-border__top">On this card:</td>
                     </tr>
                     <tr>
-                      <td class="u-padding__topBottom">
+                      <td class="qt-u-padding__topBottom">
                         <table>
                           <tr>
                             <td align="center">
@@ -53,7 +62,7 @@
                             </td>
                           </tr>
                           <tr>
-                            <td class="u-padding__top--half" align="center">
+                            <td class="qt-u-padding__top--half" align="center">
                               Test User<br>
                               Test Bank<br>
                               XXXX-0000<br>
@@ -70,6 +79,6 @@
         </td>
       </tr>
     </table>
-  </center>
+  </div>
 </body>
 </html>

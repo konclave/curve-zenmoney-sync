@@ -15,8 +15,10 @@ export class CurveEmailParseError extends Error {
 export function parseCurveEmail(html: string): CurveTransactionInput {
   const root = parse(html);
 
-  // Merchant: first bold td aligned left
-  const boldTds = root.querySelectorAll('td.u-bold');
+  // Merchant: first bold td aligned left.
+  // Matches both direct emails (class="u-bold") and forwarded emails where
+  // the mail client prepends a namespace prefix (e.g. class="qt-u-bold").
+  const boldTds = root.querySelectorAll('td[class*="u-bold"]');
   const merchantTd = boldTds.find(td => td.getAttribute('align') === 'left');
   if (!merchantTd) {
     throw new CurveEmailParseError('Could not find merchant element in email HTML', 'merchant');
@@ -47,7 +49,7 @@ export function parseCurveEmail(html: string): CurveTransactionInput {
   }
 
   // Date: first non-empty grey smaller td with half top padding
-  const dateTds = root.querySelectorAll('td.u-greySmaller.u-padding__top--half');
+  const dateTds = root.querySelectorAll('td[class*="greySmaller"][class*="padding__top--half"]');
   const dateTd = dateTds.find(td => td.text.trim().length > 0);
   if (!dateTd) {
     throw new CurveEmailParseError('Could not find date element in email HTML', 'date');

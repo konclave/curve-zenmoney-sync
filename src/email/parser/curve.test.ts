@@ -8,6 +8,11 @@ const fixtureHtml = readFileSync(
   'utf-8',
 );
 
+const forwardedFixtureHtml = readFileSync(
+  join(__dirname, 'fixtures/curve-receipt-forwarded.html'),
+  'utf-8',
+);
+
 describe('parseCurveEmail', () => {
   it('extracts merchant from bold left-aligned td', () => {
     const result = parseCurveEmail(fixtureHtml);
@@ -31,12 +36,12 @@ describe('parseCurveEmail', () => {
 
   it('extracts syncID as last 4 card digits', () => {
     const result = parseCurveEmail(fixtureHtml);
-    expect(result.syncID).toBe('8257');
+    expect(result.syncID).toBe('0000');
   });
 
   it('extracts account name (line before card digits)', () => {
     const result = parseCurveEmail(fixtureHtml);
-    expect(result.account).toBe('Trading 212');
+    expect(result.account).toBe('Test Bank');
   });
 
   it('sets originalAmount and originalCurrency equal to amount and currency', () => {
@@ -62,5 +67,31 @@ describe('parseCurveEmail', () => {
   it('throws CurveEmailParseError for unrecognised currency symbol', () => {
     const htmlWithUnknownCurrency = fixtureHtml.replace('€8.09', 'Ω8.09');
     expect(() => parseCurveEmail(htmlWithUnknownCurrency)).toThrow(CurveEmailParseError);
+  });
+});
+
+describe('parseCurveEmail — forwarded email (qt- prefixed classes)', () => {
+  it('extracts merchant', () => {
+    expect(parseCurveEmail(forwardedFixtureHtml).merchant).toBe('Starbucks');
+  });
+
+  it('extracts amount', () => {
+    expect(parseCurveEmail(forwardedFixtureHtml).amount).toBe(8.09);
+  });
+
+  it('extracts currency', () => {
+    expect(parseCurveEmail(forwardedFixtureHtml).currency).toBe('EUR');
+  });
+
+  it('extracts date', () => {
+    expect(parseCurveEmail(forwardedFixtureHtml).date).toMatch(/^2026-04-23/);
+  });
+
+  it('extracts syncID', () => {
+    expect(parseCurveEmail(forwardedFixtureHtml).syncID).toBe('0000');
+  });
+
+  it('extracts account name', () => {
+    expect(parseCurveEmail(forwardedFixtureHtml).account).toBe('Test Bank');
   });
 });
