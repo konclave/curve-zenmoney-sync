@@ -8,13 +8,24 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(realpath "${SCRIPT_DIR}/..")"
 CONTAINER_FILE="${SCRIPT_DIR}/curve-zenmoney-sync.container"
 SYSTEMD_QUADLET_DIR="/etc/containers/systemd"
 SYMLINK_TARGET="${SYSTEMD_QUADLET_DIR}/curve-zenmoney-sync.container"
-ENV_SOURCE="${SCRIPT_DIR}/../.env"
+ENV_SOURCE="${PROJECT_DIR}/.env"
 ENV_DEST_DIR="/etc/curve-zenmoney-sync"
 ENV_DEST="${ENV_DEST_DIR}/.env"
 SERVICE_NAME="curve-zenmoney-sync.service"
+IMAGE_NAME="localhost/curve-zenmoney-sync:latest"
+BUILD_HASH_FILE="${ENV_DEST_DIR}/.build-hash"
+
+# Files that affect the container image — changes to any of these trigger a rebuild
+BUILD_SOURCES=(
+  "${PROJECT_DIR}/Dockerfile"
+  "${PROJECT_DIR}/package.json"
+  "${PROJECT_DIR}/package-lock.json"
+  "${PROJECT_DIR}/src"
+)
 
 # --- Preflight checks -------------------------------------------------------
 
@@ -32,6 +43,31 @@ if [[ ! -f "${ENV_SOURCE}" ]]; then
   echo "ERROR: .env file not found at ${ENV_SOURCE}" >&2
   echo "  Copy .env.example to .env and fill in all required values." >&2
   exit 1
+fi
+
+# --- Build container image --------------------------------------------------
+
+# Compute a hash of all files that affect the image.
+# find is used to enumerate src/ recursively so any file addition/removal is detected.
+current_hash=$(find "${BUILD_SOURCES[@]}" -type f | sort | xargs sha256sum | sha256sum | cut -d' ' -f1)
+
+stored_hash=""
+if [[ -f "${BUILD_HASH_FILE}" ]]; then
+  stored_hash=$(cat "${BUILD_HASH_FILE}")
+fi
+
+if ! podman image exists "${IMAGE_NAME}"; then
+  echo "==> Image not found — building ${IMAGE_NAME} ..."
+  podman build -t "${IMAGE_NAME}" "${PROJECT_DIR}"
+  mkdir -p "${ENV_DEST_DIR}"
+  echo "${current_hash}" > "${BUILD_HASH_FILE}"
+elif [[ "${current_hash}" != "${stored_hash}" ]]; then
+  echo "==> Build sources changed — rebuilding ${IMAGE_NAME} ..."
+  podman build -t "${IMAGE_NAME}" "${PROJECT_DIR}"
+  mkdir -p "${ENV_DEST_DIR}"
+  echo "${current_hash}" > "${BUILD_HASH_FILE}"
+else
+  echo "==> Image is up to date, skipping build."
 fi
 
 # --- Install .env -----------------------------------------------------------
