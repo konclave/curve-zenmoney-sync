@@ -50,8 +50,10 @@ export function buildApp(config: Config) {
       transaction = parseCurveEmail(parsedEmail.html);
     } catch (err) {
       const message = (err as CurveEmailParseError).message;
+      request.log.error({ html: parsedEmail.html }, 'Curve email parse error — raw HTML');
+      const htmlSnippet = parsedEmail.html.slice(0, 1500);
       await telegram.error(
-        `Failed to parse Curve email\nSubject: ${parsedEmail.subject}\nReason: ${message}\n\n${new Date().toISOString()}`,
+        `Failed to parse Curve email\nSubject: ${parsedEmail.subject}\nReason: ${message}\n\nHTML snippet:\n${htmlSnippet}\n\n${new Date().toISOString()}`,
       );
       return { status: 'ok' };
     }
