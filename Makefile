@@ -8,7 +8,7 @@ RUNTIME         ?= nodejs22
 MEMORY          ?= 256MB
 TIMEOUT         ?= 30s
 
-.PHONY: dev test build package deploy create-function create-trigger logs
+.PHONY: dev test build package deploy create-function create-trigger logs quadlet
 
 dev:                        ## Run HTTP server locally
 	npm run dev
