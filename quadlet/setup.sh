@@ -56,18 +56,26 @@ if [[ -f "${BUILD_HASH_FILE}" ]]; then
   stored_hash=$(cat "${BUILD_HASH_FILE}")
 fi
 
-if ! podman image exists "${IMAGE_NAME}"; then
-  echo "==> Image not found — building ${IMAGE_NAME} ..."
+if ! podman image exists "${IMAGE_NAME}" || [[ "${current_hash}" != "${stored_hash}" ]]; then
+  if ! podman image exists "${IMAGE_NAME}"; then
+    echo "==> Image not found — building ..."
+  else
+    echo "==> Build sources changed — rebuilding ..."
+  fi
+
+  echo "==> Installing dependencies ..."
+  npm ci --prefix "${PROJECT_DIR}"
+
+  echo "==> Compiling TypeScript ..."
+  npm run --prefix "${PROJECT_DIR}" build
+
+  echo "==> Building container image ${IMAGE_NAME} ..."
   podman build -t "${IMAGE_NAME}" "${PROJECT_DIR}"
-  mkdir -p "${ENV_DEST_DIR}"
-  echo "${current_hash}" > "${BUILD_HASH_FILE}"
-elif [[ "${current_hash}" != "${stored_hash}" ]]; then
-  echo "==> Build sources changed — rebuilding ${IMAGE_NAME} ..."
-  podman build -t "${IMAGE_NAME}" "${PROJECT_DIR}"
+
   mkdir -p "${ENV_DEST_DIR}"
   echo "${current_hash}" > "${BUILD_HASH_FILE}"
 else
-  echo "==> Image is up to date, skipping build."
+  echo "==> Build sources unchanged, skipping build."
 fi
 
 # --- Install .env -----------------------------------------------------------
