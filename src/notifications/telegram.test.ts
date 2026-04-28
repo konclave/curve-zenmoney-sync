@@ -38,6 +38,21 @@ describe('TelegramNotifier', () => {
     );
   });
 
+  it('logs warn notifications to stdout before sending Telegram', async () => {
+    const logger = { warn: vi.fn(), error: vi.fn() };
+    const notifier = new TelegramNotifier(config, logger as never);
+
+    await notifier.warn('Rate limited');
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'notification.telegram.warn',
+        telegram_notification: true,
+      }),
+      'Rate limited',
+    );
+  });
+
   it('does not throw if fetch fails', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network error')));
     const notifier = new TelegramNotifier(config);

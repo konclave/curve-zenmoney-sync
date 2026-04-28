@@ -5,6 +5,7 @@ import { join } from 'path';
 import { buildApp } from './app';
 import { createZenMoneyTransaction } from '../zenmoney/index';
 import { TelegramNotifier } from '../notifications/telegram';
+import { createAppLogger } from '../logging/logger';
 
 vi.mock('../zenmoney/index', () => ({
   createZenMoneyTransaction: vi.fn().mockResolvedValue({
@@ -55,10 +56,12 @@ describe('GET /health', () => {
 describe('POST /webhook', () => {
   let app: ReturnType<typeof buildApp>;
   let telegramInstance: { warn: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
+  let logWriteSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    app = buildApp(config);
+    logWriteSpy = vi.fn();
+    app = buildApp(config, createAppLogger({ write: logWriteSpy }));
     telegramInstance = vi.mocked(TelegramNotifier).mock.results[0].value;
   });
 
@@ -125,6 +128,31 @@ describe('POST /webhook', () => {
     expect(response.json()).toEqual({ status: 'ok' });
     expect(telegramInstance.error).toHaveBeenCalledWith(
       expect.stringContaining('quota exceeded'),
+      expect.objectContaining({
+        merchant: 'Starbucks',
+        currency: 'EUR',
+        reason: 'quota exceeded',
+      }),
     );
+  });
+
+  it('emits info log for successful processing', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/webhook?token=test-token',
+      payload: validPayload,
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const transactionCreatedLog = logWriteSpy.mock.calls
+      .map(([line]) => JSON.parse(line))
+      .find((entry) => entry.event === 'transaction.created');
+
+    expect(transactionCreatedLog).toMatchObject({
+      event: 'transaction.created',
+      merchant: 'Starbucks',
+      currency: 'EUR',
+    });
   });
 });

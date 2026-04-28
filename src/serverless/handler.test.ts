@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { createAppLogger } from '../logging/logger';
 
 vi.mock('./config', () => ({
   loadServerlessConfig: vi.fn().mockReturnValue({
@@ -27,7 +28,7 @@ vi.mock('../notifications/telegram', () => ({
   })),
 }));
 
-import { handler } from './handler';
+import { createHandler } from './handler';
 import { createZenMoneyTransaction } from '../zenmoney/index';
 import { TelegramNotifier } from '../notifications/telegram';
 
@@ -48,12 +49,20 @@ const validEvent = {
 };
 
 describe('handler', () => {
-  // TelegramNotifier is instantiated once at module cold-start; capture before any clearAllMocks
-  const telegramInstance = vi.mocked(TelegramNotifier).mock.results[0]
-    .value as { warn: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
+  let telegramInstance: { warn: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
+  let handler: ReturnType<typeof createHandler>;
+  let logWriteSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    logWriteSpy = vi.fn();
+    handler = createHandler({
+      zenmoney: { accessToken: 'zen-token', defaultAccountId: 'acc-id' },
+      telegram: { botToken: 'bot-token', chatId: '123' },
+      curveSenderEmail: 'support@imaginecurve.com',
+    }, createAppLogger({ write: logWriteSpy }));
+    telegramInstance = vi.mocked(TelegramNotifier).mock.results[0]
+      .value as { warn: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
   });
 
   it('calls createZenMoneyTransaction for a valid event', async () => {
@@ -76,6 +85,10 @@ describe('handler', () => {
     await handler(event);
     expect(telegramInstance.warn).toHaveBeenCalledWith(
       expect.stringContaining('spam@example.com'),
+      expect.objectContaining({
+        sender: 'spam@example.com',
+        expectedSender: 'support@imaginecurve.com',
+      }),
     );
     expect(createZenMoneyTransaction).not.toHaveBeenCalled();
   });
@@ -84,6 +97,9 @@ describe('handler', () => {
     await handler(null);
     expect(telegramInstance.error).toHaveBeenCalledWith(
       expect.stringContaining('Failed to parse webhook payload'),
+      expect.objectContaining({
+        reason: 'Invalid email trigger event',
+      }),
     );
     expect(createZenMoneyTransaction).not.toHaveBeenCalled();
   });
@@ -98,6 +114,9 @@ describe('handler', () => {
     await handler(event);
     expect(telegramInstance.error).toHaveBeenCalledWith(
       expect.stringContaining('Failed to parse Curve email'),
+      expect.objectContaining({
+        subject: 'Curve Receipt: Purchase at Starbucks on 23 April 2026 for €8.09',
+      }),
     );
     expect(createZenMoneyTransaction).not.toHaveBeenCalled();
   });
@@ -112,6 +131,25 @@ describe('handler', () => {
     await handler(validEvent);
     expect(telegramInstance.error).toHaveBeenCalledWith(
       expect.stringContaining('quota exceeded'),
+      expect.objectContaining({
+        merchant: 'Starbucks',
+        currency: 'EUR',
+        reason: 'quota exceeded',
+      }),
     );
+  });
+
+  it('emits info log for successful serverless processing', async () => {
+    await handler(validEvent);
+
+    const transactionCreatedLog = logWriteSpy.mock.calls
+      .map(([line]) => JSON.parse(line))
+      .find((entry) => entry.event === 'transaction.created');
+
+    expect(transactionCreatedLog).toMatchObject({
+      event: 'transaction.created',
+      merchant: 'Starbucks',
+      currency: 'EUR',
+    });
   });
 });
