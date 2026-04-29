@@ -40,15 +40,21 @@ describe('loadConfig', () => {
     expect(config.port).toBe(8080);
   });
 
-  it('uses default curveSenderEmail when not set', () => {
+  it('uses default curveSenderEmails when not set', () => {
     const config = loadConfig();
-    expect(config.curveSenderEmail).toBe('support@imaginecurve.com');
+    expect(config.curveSenderEmails).toEqual(['support@imaginecurve.com']);
   });
 
   it('uses CURVE_SENDER_EMAIL from env when set', () => {
     process.env.CURVE_SENDER_EMAIL = 'custom@example.com';
     const config = loadConfig();
-    expect(config.curveSenderEmail).toBe('custom@example.com');
+    expect(config.curveSenderEmails).toEqual(['custom@example.com']);
+  });
+
+  it('parses multiple comma-separated emails from CURVE_SENDER_EMAIL', () => {
+    process.env.CURVE_SENDER_EMAIL = 'one@example.com, two@example.com , three@example.com';
+    const config = loadConfig();
+    expect(config.curveSenderEmails).toEqual(['one@example.com', 'two@example.com', 'three@example.com']);
   });
 
   it.each(Object.keys(required))('throws if %s is missing', (key) => {

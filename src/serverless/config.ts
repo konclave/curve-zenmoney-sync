@@ -1,7 +1,7 @@
 export interface ServerlessConfig {
   zenmoney: { accessToken: string; defaultAccountId: string };
   telegram: { botToken: string; chatId: string };
-  curveSenderEmail: string;
+  curveSenderEmails: string[];
 }
 
 export function loadServerlessConfig(): ServerlessConfig {
@@ -27,6 +27,7 @@ export function loadServerlessConfig(): ServerlessConfig {
       botToken: process.env.TELEGRAM_BOT_TOKEN!,
       chatId: process.env.TELEGRAM_CHAT_ID!,
     },
-    curveSenderEmail: process.env.CURVE_SENDER_EMAIL ?? 'support@imaginecurve.com',
+    curveSenderEmails: (process.env.CURVE_SENDER_EMAIL ?? 'support@imaginecurve.com')
+      .split(',').map(e => e.trim()).filter(Boolean),
   };
 }

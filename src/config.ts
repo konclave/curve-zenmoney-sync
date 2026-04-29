@@ -13,7 +13,7 @@ export interface Config {
   zenmoney: ZenMoneyServiceConfig;
   cloudmailinToken: string;
   telegram: TelegramConfig;
-  curveSenderEmail: string;
+  curveSenderEmails: string[];
 }
 
 export function loadConfig(): Config {
@@ -42,6 +42,7 @@ export function loadConfig(): Config {
       botToken: process.env.TELEGRAM_BOT_TOKEN!,
       chatId: process.env.TELEGRAM_CHAT_ID!,
     },
-    curveSenderEmail: process.env.CURVE_SENDER_EMAIL ?? 'support@imaginecurve.com',
+    curveSenderEmails: (process.env.CURVE_SENDER_EMAIL ?? 'support@imaginecurve.com')
+      .split(',').map(e => e.trim()).filter(Boolean),
   };
 }

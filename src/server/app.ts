@@ -56,21 +56,21 @@ export function buildApp(config: Config, logger: AppLogger = appLogger) {
       'Webhook payload parsed',
     );
 
-    if (parsedEmail.from !== config.curveSenderEmail) {
+    if (!config.curveSenderEmails.includes(parsedEmail.from)) {
       webhookLogger.warn(
         {
           event: 'email.sender_unexpected',
           sender: parsedEmail.from,
-          expectedSender: config.curveSenderEmail,
+          expectedSenders: config.curveSenderEmails,
           subject: parsedEmail.subject,
         },
         'Email from unexpected sender',
       );
       await telegram.warn(
-        `Email from unexpected sender: ${parsedEmail.from}\nExpected: ${config.curveSenderEmail}`,
+        `Email from unexpected sender: ${parsedEmail.from}\nExpected: ${config.curveSenderEmails.join(', ')}`,
         {
           sender: parsedEmail.from,
-          expectedSender: config.curveSenderEmail,
+          expectedSenders: config.curveSenderEmails,
           subject: parsedEmail.subject,
         },
       );

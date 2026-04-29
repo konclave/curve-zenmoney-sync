@@ -27,7 +27,7 @@ vi.mock('../notifications/telegram', () => ({
 const config = {
   port: 3000,
   cloudmailinToken: 'test-token',
-  curveSenderEmail: 'support@imaginecurve.com',
+  curveSenderEmails: ['support@imaginecurve.com'],
   zenmoney: { accessToken: 'zen-token', defaultAccountId: 'acc-id' },
   telegram: { botToken: 'bot-token', chatId: '123' },
 };

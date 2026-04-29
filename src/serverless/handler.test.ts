@@ -7,7 +7,7 @@ vi.mock('./config', () => ({
   loadServerlessConfig: vi.fn().mockReturnValue({
     zenmoney: { accessToken: 'zen-token', defaultAccountId: 'acc-id' },
     telegram: { botToken: 'bot-token', chatId: '123' },
-    curveSenderEmail: 'support@imaginecurve.com',
+    curveSenderEmails: ['support@imaginecurve.com'],
   }),
 }));
 
@@ -59,7 +59,7 @@ describe('handler', () => {
     handler = createHandler({
       zenmoney: { accessToken: 'zen-token', defaultAccountId: 'acc-id' },
       telegram: { botToken: 'bot-token', chatId: '123' },
-      curveSenderEmail: 'support@imaginecurve.com',
+      curveSenderEmails: ['support@imaginecurve.com'],
     }, createAppLogger({ write: logWriteSpy }));
     telegramInstance = vi.mocked(TelegramNotifier).mock.results[0]
       .value as { warn: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
@@ -87,7 +87,7 @@ describe('handler', () => {
       expect.stringContaining('spam@example.com'),
       expect.objectContaining({
         sender: 'spam@example.com',
-        expectedSender: 'support@imaginecurve.com',
+        expectedSenders: ['support@imaginecurve.com'],
       }),
     );
     expect(createZenMoneyTransaction).not.toHaveBeenCalled();
