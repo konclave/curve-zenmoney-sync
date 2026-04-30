@@ -84,7 +84,7 @@ createZenMoneyTransaction() calls ZenMoney API
 | `PORT` | No | `3000` | HTTP server port |
 | `ZENMONEY_ACCESS_TOKEN` | Yes | — | ZenMoney OAuth2 access token |
 | `ZENMONEY_DEFAULT_ACCOUNT_ID` | Yes | — | Default ZenMoney account UUID |
-| `CLOUDMAILIN_TOKEN` | Yes | — | Shared secret for webhook validation |
+| `CLOUDMAILIN_CREDENTIALS` | Yes | — | Shared credentials for webhook validation |
 | `TELEGRAM_BOT_TOKEN` | Yes | — | Telegram bot token |
 | `TELEGRAM_CHAT_ID` | Yes | — | Telegram chat or channel ID |
 | `CURVE_SENDER_EMAIL` | No | `support@imaginecurve.com` | Expected sender address for validation |

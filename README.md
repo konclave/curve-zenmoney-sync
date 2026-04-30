@@ -78,7 +78,7 @@ Copy `.env.example` to `.env` and fill in the values below. The service will ref
 |---|---|---|---|
 | `ZENMONEY_ACCESS_TOKEN` | Yes | — | OAuth2 access token — get from [zerro.app](https://zerro.app/) |
 | `ZENMONEY_DEFAULT_ACCOUNT_ID` | Yes | — | UUID of the ZenMoney account to sync into |
-| `CLOUDMAILIN_TOKEN` | Yes | — | Shared secret used to authenticate incoming webhooks |
+| `CLOUDMAILIN_CREDENTIALS` | Yes | — | Shared secret (username:password) used to authenticate incoming webhooks with Basic Authentication header |
 | `TELEGRAM_BOT_TOKEN` | Yes | — | Bot token from [@BotFather](https://t.me/BotFather) |
 | `TELEGRAM_CHAT_ID` | Yes | — | Chat ID to receive error alerts — get from [@userinfobot](https://t.me/userinfobot) |
 | `PORT` | No | `3000` | HTTP server port |
@@ -88,15 +88,15 @@ Copy `.env.example` to `.env` and fill in the values below. The service will ref
 
 1. Create a new address in Cloudmailin and set the **target URL** to:
    ```
-   http://your-server:3000/webhook?token=YOUR_CLOUDMAILIN_TOKEN
+   http://username:password@your-server:3000/webhookCLOUDMAILIN_CREDENTIALS
    ```
-   Use the same value for `token` as `CLOUDMAILIN_TOKEN` in `.env`.
+   Use the same `username:password` as a value for `CLOUDMAILIN_CREDENTIALS` in `.env`.
 
 2. Set the **POST format** to `HTML + plain text (multipart)`.
 
 3. In your email client, create a forwarding rule: forward all emails from `support@imaginecurve.com` to your Cloudmailin address.
 
-The service validates the `token` query parameter on every incoming request and returns HTTP 400 for mismatches.
+The service validates the creadentials from the Authorizatoin header `` on every incoming request and returns HTTP 400 for mismatches.
 
 ## Development
 
