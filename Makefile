@@ -8,7 +8,12 @@ RUNTIME         ?= nodejs22
 MEMORY          ?= 256MB
 TIMEOUT         ?= 30s
 
-.PHONY: dev test build package deploy create-function create-trigger logs quadlet
+.PHONY: help dev test build package deploy create-function create-trigger logs quadlet
+
+help:                       ## Show this help
+	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ {printf "  %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+.DEFAULT_GOAL := help
 
 dev:                        ## Run HTTP server locally
 	npm run dev
