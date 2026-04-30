@@ -88,7 +88,7 @@ Copy `.env.example` to `.env` and fill in the values below. The service will ref
 
 1. Create a new address in Cloudmailin and set the **target URL** to:
    ```
-   http://username:password@your-server:3000/webhookCLOUDMAILIN_CREDENTIALS
+   http://username:password@your-server:3000/webhook
    ```
    Use the same `username:password` as a value for `CLOUDMAILIN_CREDENTIALS` in `.env`.
 
@@ -96,7 +96,7 @@ Copy `.env.example` to `.env` and fill in the values below. The service will ref
 
 3. In your email client, create a forwarding rule: forward all emails from `support@imaginecurve.com` to your Cloudmailin address.
 
-The service validates the creadentials from the Authorizatoin header `` on every incoming request and returns HTTP 400 for mismatches.
+The service validates the credentials from the Authorization header on every incoming request and returns HTTP 401 for mismatches.
 
 ## Development
 
