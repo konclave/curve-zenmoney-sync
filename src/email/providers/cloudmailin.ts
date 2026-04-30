@@ -1,4 +1,4 @@
-import type { EmailProvider, ParsedEmail } from './types';
+import type { EmailProvider, ParsedEmail } from "./types";
 
 interface CloudmailinHeaders {
   from?: string;
@@ -15,28 +15,24 @@ interface CloudmailinPayload {
 
 export class CloudmailinAdapter implements EmailProvider {
   parseWebhookPayload(body: unknown): ParsedEmail {
-    if (!body || typeof body !== 'object') {
-      throw new Error('Invalid Cloudmailin payload: expected an object');
+    if (!body || typeof body !== "object") {
+      throw new Error("Invalid Cloudmailin payload: expected an object");
     }
 
     const payload = body as CloudmailinPayload;
     const headers = payload.headers ?? {};
 
     const from =
-      payload.envelope?.from ||
-      (typeof headers.from === 'string' ? headers.from : '') ||
-      '';
+      payload.envelope?.from || (typeof headers.from === "string" ? headers.from : "") || "";
 
     const rawSubject = headers.subject;
-    const subject = Array.isArray(rawSubject)
-      ? (rawSubject[0] ?? '')
-      : (rawSubject ?? '');
+    const subject = Array.isArray(rawSubject) ? (rawSubject[0] ?? "") : (rawSubject ?? "");
 
     return {
       from,
       subject,
-      html: payload.html ?? '',
-      plain: payload.plain ?? '',
+      html: payload.html ?? "",
+      plain: payload.plain ?? "",
     };
   }
 }

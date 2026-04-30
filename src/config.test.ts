@@ -56,8 +56,7 @@ describe("loadConfig", () => {
   });
 
   it("parses multiple comma-separated emails from CURVE_SENDER_EMAIL", () => {
-    process.env.CURVE_SENDER_EMAIL =
-      "one@example.com, two@example.com , three@example.com";
+    process.env.CURVE_SENDER_EMAIL = "one@example.com, two@example.com , three@example.com";
     const config = loadConfig();
     expect(config.curveSenderEmails).toEqual([
       "one@example.com",

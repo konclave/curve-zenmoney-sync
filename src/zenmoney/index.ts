@@ -24,9 +24,7 @@ async function makeRequest<T>(
     accessToken?: string;
   },
 ): Promise<T> {
-  const fullUrl = url.startsWith("http")
-    ? url
-    : `${options.baseURL || ""}${url}`;
+  const fullUrl = url.startsWith("http") ? url : `${options.baseURL || ""}${url}`;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -40,10 +38,7 @@ async function makeRequest<T>(
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(
-    () => controller.abort(),
-    options.timeout || 30000,
-  );
+  const timeoutId = setTimeout(() => controller.abort(), options.timeout || 30000);
 
   try {
     const response = await fetch(fullUrl, {
@@ -56,9 +51,7 @@ async function makeRequest<T>(
     clearTimeout(timeoutId);
 
     if (response.status === 401) {
-      throw new Error(
-        "Authentication failed. Token may be expired or invalid.",
-      );
+      throw new Error("Authentication failed. Token may be expired or invalid.");
     }
     if (response.status === 429) {
       throw new Error("Rate limit exceeded. Please try again later.");
@@ -136,14 +129,7 @@ export interface ZenMoneyUser {
   parent?: number; // -> User.id
 }
 
-export type AccountType =
-  | "cash"
-  | "ccard"
-  | "checking"
-  | "loan"
-  | "deposit"
-  | "emoney"
-  | "debt";
+export type AccountType = "cash" | "ccard" | "checking" | "loan" | "deposit" | "emoney" | "debt";
 
 export interface ZenMoneyAccount {
   id: string; // UUID
@@ -332,12 +318,7 @@ export class ZenMoneyApiError extends Error {
   public readonly statusCode?: number;
   public readonly response?: any;
 
-  constructor(
-    message: string,
-    code: string,
-    statusCode?: number,
-    response?: any,
-  ) {
+  constructor(message: string, code: string, statusCode?: number, response?: any) {
     super(message);
     this.name = "ZenMoneyApiError";
     this.code = code;
@@ -406,9 +387,7 @@ export class TransactionValidator {
   /**
    * Validate complete transaction input
    */
-  static validateTransaction(
-    transaction: CurveTransactionInput,
-  ): ValidationResult {
+  static validateTransaction(transaction: CurveTransactionInput): ValidationResult {
     const errors: ValidationError[] = [];
     const warnings: string[] = [];
 
@@ -446,9 +425,7 @@ export class TransactionValidator {
       if (value === undefined || value === null) {
         errors.push(new ValidationError(`${field} is required`, field, value));
       } else if (typeof value === "string" && !value.trim()) {
-        errors.push(
-          new ValidationError(`${field} cannot be empty`, field, value),
-        );
+        errors.push(new ValidationError(`${field} cannot be empty`, field, value));
       }
     }
   }
@@ -469,24 +446,17 @@ export class TransactionValidator {
     for (const field of stringFields) {
       const value = transaction[field];
       if (value !== undefined && typeof value !== "string") {
-        errors.push(
-          new ValidationError(`${field} must be a string`, field, value),
-        );
+        errors.push(new ValidationError(`${field} must be a string`, field, value));
       }
     }
 
     // Number fields
-    const numberFields: (keyof CurveTransactionInput)[] = [
-      "amount",
-      "originalAmount",
-    ];
+    const numberFields: (keyof CurveTransactionInput)[] = ["amount", "originalAmount"];
 
     for (const field of numberFields) {
       const value = transaction[field];
       if (value !== undefined && (typeof value !== "number" || isNaN(value))) {
-        errors.push(
-          new ValidationError(`${field} must be a valid number`, field, value),
-        );
+        errors.push(new ValidationError(`${field} must be a valid number`, field, value));
       }
     }
   }
@@ -548,10 +518,7 @@ export class TransactionValidator {
       );
     }
 
-    if (
-      transaction.originalCurrency &&
-      !currencyPattern.test(transaction.originalCurrency)
-    ) {
+    if (transaction.originalCurrency && !currencyPattern.test(transaction.originalCurrency)) {
       errors.push(
         new ValidationError(
           "Original currency must be a 3-letter ISO code",
@@ -562,34 +529,14 @@ export class TransactionValidator {
     }
 
     // Warn about uncommon currencies
-    const commonCurrencies = [
-      "USD",
-      "EUR",
-      "GBP",
-      "RUB",
-      "JPY",
-      "CAD",
-      "AUD",
-      "CHF",
-      "CNY",
-    ];
+    const commonCurrencies = ["USD", "EUR", "GBP", "RUB", "JPY", "CAD", "AUD", "CHF", "CNY"];
 
-    if (
-      transaction.currency &&
-      !commonCurrencies.includes(transaction.currency)
-    ) {
-      warnings.push(
-        `Currency ${transaction.currency} is not commonly supported`,
-      );
+    if (transaction.currency && !commonCurrencies.includes(transaction.currency)) {
+      warnings.push(`Currency ${transaction.currency} is not commonly supported`);
     }
 
-    if (
-      transaction.originalCurrency &&
-      !commonCurrencies.includes(transaction.originalCurrency)
-    ) {
-      warnings.push(
-        `Original currency ${transaction.originalCurrency} is not commonly supported`,
-      );
+    if (transaction.originalCurrency && !commonCurrencies.includes(transaction.originalCurrency)) {
+      warnings.push(`Original currency ${transaction.originalCurrency} is not commonly supported`);
     }
   }
 
@@ -601,13 +548,7 @@ export class TransactionValidator {
     // Amount validation
     if (transaction.amount !== undefined) {
       if (transaction.amount === 0) {
-        errors.push(
-          new ValidationError(
-            "Amount cannot be zero",
-            "amount",
-            transaction.amount,
-          ),
-        );
+        errors.push(new ValidationError("Amount cannot be zero", "amount", transaction.amount));
       }
 
       if (Math.abs(transaction.amount) > 1000000) {
@@ -636,17 +577,12 @@ export class TransactionValidator {
     }
 
     // Cross-validation of amounts
-    if (
-      transaction.amount !== undefined &&
-      transaction.originalAmount !== undefined
-    ) {
+    if (transaction.amount !== undefined && transaction.originalAmount !== undefined) {
       if (
         transaction.currency === transaction.originalCurrency &&
         transaction.amount !== transaction.originalAmount
       ) {
-        warnings.push(
-          "Amount and original amount differ despite same currency",
-        );
+        warnings.push("Amount and original amount differ despite same currency");
       }
 
       // Check for unrealistic exchange rates
@@ -670,9 +606,7 @@ export class TransactionValidator {
       const date = new Date(transaction.date);
 
       if (isNaN(date.getTime())) {
-        errors.push(
-          new ValidationError("Invalid date format", "date", transaction.date),
-        );
+        errors.push(new ValidationError("Invalid date format", "date", transaction.date));
         return;
       }
 
@@ -695,10 +629,8 @@ export class TransactionValidator {
       if (dayOfWeek === 0 || dayOfWeek === 6) {
         warnings.push("Transaction date falls on a weekend");
       }
-    } catch (error) {
-      errors.push(
-        new ValidationError("Date parsing failed", "date", transaction.date),
-      );
+    } catch {
+      errors.push(new ValidationError("Date parsing failed", "date", transaction.date));
     }
   }
 
@@ -742,11 +674,7 @@ export class ErrorHandler {
         }
 
         // Don't retry on authentication errors unless it's the first attempt
-        if (
-          error instanceof ZenMoneyApiError &&
-          error.statusCode === 401 &&
-          attempt > 1
-        ) {
+        if (error instanceof ZenMoneyApiError && error.statusCode === 401 && attempt > 1) {
           throw error;
         }
 
@@ -937,9 +865,7 @@ export class ZenMoneyApiClient {
   /**
    * Create a new merchant
    */
-  async createMerchant(
-    merchant: Omit<ZenMoneyMerchant, "changed">,
-  ): Promise<ZenMoneyApiResponse> {
+  async createMerchant(merchant: Omit<ZenMoneyMerchant, "changed">): Promise<ZenMoneyApiResponse> {
     const merchantWithTimestamp: ZenMoneyMerchant = {
       ...merchant,
       changed: Math.floor(Date.now() / 1000),
@@ -1012,9 +938,7 @@ export class ZenMoneyApiClient {
   /**
    * Find account by ID
    */
-  async findAccountById(
-    accountId: string,
-  ): Promise<ZenMoneyAccount | undefined> {
+  async findAccountById(accountId: string): Promise<ZenMoneyAccount | undefined> {
     const accounts = await this.getAccounts();
     return accounts.find((account) => account.id === accountId);
   }
@@ -1022,25 +946,17 @@ export class ZenMoneyApiClient {
   /**
    * Find instrument by currency code
    */
-  async findInstrumentByCurrency(
-    currencyCode: string,
-  ): Promise<ZenMoneyInstrument | undefined> {
+  async findInstrumentByCurrency(currencyCode: string): Promise<ZenMoneyInstrument | undefined> {
     const instruments = await this.getInstruments();
-    return instruments.find(
-      (instrument) => instrument.shortTitle === currencyCode,
-    );
+    return instruments.find((instrument) => instrument.shortTitle === currencyCode);
   }
 
   /**
    * Find merchant by title
    */
-  async findMerchantByTitle(
-    title: string,
-  ): Promise<ZenMoneyMerchant | undefined> {
+  async findMerchantByTitle(title: string): Promise<ZenMoneyMerchant | undefined> {
     const merchants = await this.getMerchants();
-    return merchants.find(
-      (merchant) => merchant.title.toLowerCase() === title.toLowerCase(),
-    );
+    return merchants.find((merchant) => merchant.title.toLowerCase() === title.toLowerCase());
   }
 
   /**
@@ -1050,7 +966,7 @@ export class ZenMoneyApiClient {
     try {
       await this.getDiff();
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -1140,10 +1056,7 @@ export class MerchantManager {
   /**
    * Create a new merchant
    */
-  private async createNewMerchant(
-    merchantName: string,
-    userId: number,
-  ): Promise<ZenMoneyMerchant> {
+  private async createNewMerchant(merchantName: string, userId: number): Promise<ZenMoneyMerchant> {
     const merchantId = crypto.randomUUID();
     const cleanedName = this.cleanMerchantName(merchantName);
 
@@ -1255,10 +1168,7 @@ export class TransactionMapper {
     const accountInstrument = await this.getAccountInstrument(account);
 
     // Convert amounts to account currency if needed
-    const { convertedAmount } = this.convertAmounts(
-      curveTransaction,
-      accountInstrument,
-    );
+    const { convertedAmount } = this.convertAmounts(curveTransaction, accountInstrument);
 
     // All the transactions from Curve are outcome.
     const isIncome = false;
@@ -1337,10 +1247,7 @@ export class TransactionMapper {
       return date.toISOString().split("T")[0];
     } catch (error) {
       // Fallback to current date if parsing fails
-      console.warn(
-        `Failed to parse date "${dateString}", using current date:`,
-        error,
-      );
+      console.warn(`Failed to parse date "${dateString}", using current date:`, error);
       return new Date().toISOString().split("T")[0];
     }
   }
@@ -1348,9 +1255,7 @@ export class TransactionMapper {
   /**
    * Get account currency instrument
    */
-  private async getAccountInstrument(
-    account: ZenMoneyAccount,
-  ): Promise<ZenMoneyInstrument> {
+  private async getAccountInstrument(account: ZenMoneyAccount): Promise<ZenMoneyInstrument> {
     if (!account.instrument) {
       throw new Error(`Account ${account.id} has no associated instrument`);
     }
@@ -1385,17 +1290,15 @@ export class TransactionMapper {
     );
 
     // Convert original amount to account currency (if different)
-    const originalAmountInAccountCurrency =
-      this.converter.convertToAccountCurrency(
-        curveTransaction.originalAmount,
-        curveTransaction.originalCurrency,
-        accountCurrency,
-      );
+    const originalAmountInAccountCurrency = this.converter.convertToAccountCurrency(
+      curveTransaction.originalAmount,
+      curveTransaction.originalCurrency,
+      accountCurrency,
+    );
 
     return {
       convertedAmount: Math.round(convertedAmount * 100) / 100,
-      originalAmountInAccountCurrency:
-        Math.round(originalAmountInAccountCurrency * 100) / 100,
+      originalAmountInAccountCurrency: Math.round(originalAmountInAccountCurrency * 100) / 100,
     };
   }
 
@@ -1605,9 +1508,7 @@ export class CurrencyConverter {
     const toInstrument = this.instruments.get(toCurrency);
 
     if (!fromInstrument || !toInstrument) {
-      throw new Error(
-        `Currency not found: ${!fromInstrument ? fromCurrency : toCurrency}`,
-      );
+      throw new Error(`Currency not found: ${!fromInstrument ? fromCurrency : toCurrency}`);
     }
 
     // Convert from source currency to RUB, then from RUB to target currency
@@ -1626,11 +1527,7 @@ export class CurrencyConverter {
   /**
    * Convert amount from one currency to another
    */
-  convertAmount(
-    amount: number,
-    fromCurrency: string,
-    toCurrency: string,
-  ): number {
+  convertAmount(amount: number, fromCurrency: string, toCurrency: string): number {
     const rate = this.getExchangeRate(fromCurrency, toCurrency);
     return Math.round(amount * rate * 100) / 100; // Round to 2 decimal places
   }
@@ -1662,11 +1559,7 @@ export class CurrencyConverter {
     exchangeRate: number;
   } {
     const rate = this.getExchangeRate(fromCurrency, toCurrency);
-    const convertedAmount = this.convertAmount(
-      amount,
-      fromCurrency,
-      toCurrency,
-    );
+    const convertedAmount = this.convertAmount(amount, fromCurrency, toCurrency);
 
     return {
       originalAmount: amount,
@@ -1882,8 +1775,7 @@ export async function createZenMoneyTransaction(
       : config;
 
   try {
-    const validationResult =
-      TransactionValidator.validateTransaction(curveTransaction);
+    const validationResult = TransactionValidator.validateTransaction(curveTransaction);
 
     if (!validationResult.isValid) {
       return {
@@ -1891,9 +1783,7 @@ export async function createZenMoneyTransaction(
         message: "Transaction validation failed",
         error: {
           type: "ValidationError",
-          message: validationResult.errors
-            .map((e: ValidationError) => e.message)
-            .join("; "),
+          message: validationResult.errors.map((e: ValidationError) => e.message).join("; "),
         },
       };
     }
@@ -1952,10 +1842,7 @@ export async function createZenMoneyTransaction(
     );
 
     if (!isConnected) {
-      throw new ZenMoneyApiError(
-        "Failed to connect to ZenMoney API",
-        "CONNECTION_FAILED",
-      );
+      throw new ZenMoneyApiError("Failed to connect to ZenMoney API", "CONNECTION_FAILED");
     }
 
     // Step 5: Initialize services
@@ -1965,10 +1852,7 @@ export async function createZenMoneyTransaction(
     ]);
 
     const currencyConverter = await createCurrencyConverter(instruments);
-    const transactionMapper = createTransactionMapper(
-      currencyConverter,
-      windmillConfig,
-    );
+    const transactionMapper = createTransactionMapper(currencyConverter, windmillConfig);
     const merchantManager = createMerchantManager(apiClient, windmillConfig);
 
     // Initialize merchant cache
@@ -1976,21 +1860,14 @@ export async function createZenMoneyTransaction(
 
     // Step 6: Find target account
     const targetAccount =
-      accounts.find((acc: ZenMoneyAccount) =>
-        acc.syncID?.includes(curveTransaction.syncID),
-      ) ||
-      accounts.find(
-        (acc: ZenMoneyAccount) => acc.title.trim() === curveTransaction.account,
-      ) ||
-      accounts.find(
-        (acc: ZenMoneyAccount) => acc.id === windmillConfig.defaultAccountId,
-      );
+      accounts.find((acc: ZenMoneyAccount) => acc.syncID?.includes(curveTransaction.syncID)) ||
+      accounts.find((acc: ZenMoneyAccount) => acc.title.trim() === curveTransaction.account) ||
+      accounts.find((acc: ZenMoneyAccount) => acc.id === windmillConfig.defaultAccountId);
 
     if (!targetAccount) {
-      throw new ConfigurationError(
-        `Default account ${windmillConfig.defaultAccountId} not found`,
-        ["defaultAccountId"],
-      );
+      throw new ConfigurationError(`Default account ${windmillConfig.defaultAccountId} not found`, [
+        "defaultAccountId",
+      ]);
     }
 
     // Step 7: Handle merchant
@@ -1999,9 +1876,7 @@ export async function createZenMoneyTransaction(
     let tags: string[] | undefined;
 
     if (curveTransaction.merchant) {
-      const suggestion = await merchantManager.getMerchantSuggestions(
-        curveTransaction.merchant,
-      );
+      const suggestion = await merchantManager.getMerchantSuggestions(curveTransaction.merchant);
       if (suggestion?.tag) {
         tags = suggestion.tag;
       }
@@ -2049,8 +1924,7 @@ export async function createZenMoneyTransaction(
     if (executionConfig.dryRun) {
       return {
         success: true,
-        message:
-          "Dry run completed successfully - transaction was not actually created",
+        message: "Dry run completed successfully - transaction was not actually created",
         transactionId: zenMoneyTransaction.id,
         details: {
           merchant: merchant
@@ -2105,9 +1979,7 @@ export async function createZenMoneyTransaction(
 /**
  * Utility function to validate configuration
  */
-export async function validateConfiguration(
-  config: ScriptExecutionConfig,
-): Promise<{
+export async function validateConfiguration(config: ScriptExecutionConfig): Promise<{
   isValid: boolean;
   errors: string[];
   accountInfo?: any;
@@ -2142,12 +2014,8 @@ export async function validateConfiguration(
       apiClient.getInstruments(),
     ]);
 
-    const targetAccount = accounts.find(
-      (acc) => acc.id === config.defaultAccountId,
-    );
-    const targetInstrument = instruments.find(
-      (inst) => inst.id === config.defaultCurrencyId,
-    );
+    const targetAccount = accounts.find((acc) => acc.id === config.defaultAccountId);
+    const targetInstrument = instruments.find((inst) => inst.id === config.defaultCurrencyId);
 
     const errors: string[] = [];
 
@@ -2156,9 +2024,7 @@ export async function validateConfiguration(
     }
 
     if (!targetInstrument) {
-      errors.push(
-        `Currency instrument with ID ${config.defaultCurrencyId} not found`,
-      );
+      errors.push(`Currency instrument with ID ${config.defaultCurrencyId} not found`);
     }
 
     return {

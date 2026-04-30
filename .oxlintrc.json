@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "vitest", "node"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "jest/no-conditional-expect": "off",
+    "jest/require-to-throw-message": "off",
+    "vitest/no-conditional-expect": "off",
+    "vitest/require-mock-type-parameters": "off",
+    "@typescript-eslint/no-extraneous-class": "off"
+  },
+  "env": {
+    "builtin": true,
+    "node": true
+  }
+}

@@ -6,10 +6,10 @@ export interface ServerlessConfig {
 
 export function loadServerlessConfig(): ServerlessConfig {
   const required = [
-    'ZENMONEY_ACCESS_TOKEN',
-    'ZENMONEY_DEFAULT_ACCOUNT_ID',
-    'TELEGRAM_BOT_TOKEN',
-    'TELEGRAM_CHAT_ID',
+    "ZENMONEY_ACCESS_TOKEN",
+    "ZENMONEY_DEFAULT_ACCOUNT_ID",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
   ];
 
   for (const key of required) {
@@ -27,7 +27,9 @@ export function loadServerlessConfig(): ServerlessConfig {
       botToken: process.env.TELEGRAM_BOT_TOKEN!,
       chatId: process.env.TELEGRAM_CHAT_ID!,
     },
-    curveSenderEmails: (process.env.CURVE_SENDER_EMAIL ?? 'support@imaginecurve.com')
-      .split(',').map(e => e.trim()).filter(Boolean),
+    curveSenderEmails: (process.env.CURVE_SENDER_EMAIL ?? "support@imaginecurve.com")
+      .split(",")
+      .map((e) => e.trim())
+      .filter(Boolean),
   };
 }
