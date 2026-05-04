@@ -85,6 +85,7 @@ createZenMoneyTransaction() calls ZenMoney API
 | `ZENMONEY_ACCESS_TOKEN` | Yes | — | ZenMoney OAuth2 access token |
 | `ZENMONEY_DEFAULT_ACCOUNT_ID` | Yes | — | Default ZenMoney account UUID |
 | `CLOUDMAILIN_CREDENTIALS` | Yes | — | Shared credentials for webhook validation |
+| `CLOUDMAILIN_FORMAT` | No | `multipart` | Cloudmailin POST format: `json` or `multipart` — must match the target's "Post Format" setting |
 | `TELEGRAM_BOT_TOKEN` | Yes | — | Telegram bot token |
 | `TELEGRAM_CHAT_ID` | Yes | — | Telegram chat or channel ID |
 | `CURVE_SENDER_EMAIL` | No | `support@imaginecurve.com` | Expected sender address for validation |

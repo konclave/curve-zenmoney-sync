@@ -1,15 +1,36 @@
 import Fastify from "fastify";
+import multipart from "@fastify/multipart";
 import type { Config } from "../config";
 import { CloudmailinAdapter } from "../email/providers/cloudmailin";
 import { TelegramNotifier } from "../notifications/telegram";
 import { logger as appLogger, type AppLogger } from "../logging/logger";
 import { processEmail } from "../processor";
 
+function parseMultipartFields(fields: Record<string, string>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(fields)) {
+    const match = key.match(/^(\w+)\[(\w+)\]$/);
+    if (match) {
+      const parent = match[1];
+      const child = match[2];
+      if (!result[parent]) result[parent] = {};
+      (result[parent] as Record<string, string>)[child] = value;
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
 export function buildApp(config: Config, logger: AppLogger = appLogger) {
   const fastify = Fastify({ loggerInstance: logger });
   const emailAdapter = new CloudmailinAdapter();
   const webhookLogger = logger.child({ source: "server" });
   const telegram = new TelegramNotifier(config.telegram, webhookLogger);
+
+  if (config.cloudmailinFormat === "multipart") {
+    fastify.register(multipart, { attachFieldsToBody: "keyValues" });
+  }
 
   fastify.setNotFoundHandler((_request, reply) => {
     reply.hijack();
@@ -31,9 +52,14 @@ export function buildApp(config: Config, logger: AppLogger = appLogger) {
       return reply.code(401).send({ error: "Unauthorized" });
     }
 
+    const body =
+      config.cloudmailinFormat === "multipart"
+        ? parseMultipartFields(request.body as Record<string, string>)
+        : request.body;
+
     let parsedEmail;
     try {
-      parsedEmail = emailAdapter.parseWebhookPayload(request.body);
+      parsedEmail = emailAdapter.parseWebhookPayload(body);
     } catch (err) {
       const message = (err as Error).message;
       webhookLogger.error(

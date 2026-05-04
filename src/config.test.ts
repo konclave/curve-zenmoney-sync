@@ -22,6 +22,7 @@ describe("loadConfig", () => {
     });
     delete process.env.PORT;
     delete process.env.CURVE_SENDER_EMAIL;
+    delete process.env.CLOUDMAILIN_FORMAT;
   });
 
   it("loads all required config from env vars", () => {
@@ -63,6 +64,17 @@ describe("loadConfig", () => {
       "two@example.com",
       "three@example.com",
     ]);
+  });
+
+  it("defaults cloudmailinFormat to multipart when CLOUDMAILIN_FORMAT is not set", () => {
+    const config = loadConfig();
+    expect(config.cloudmailinFormat).toBe("multipart");
+  });
+
+  it("reads cloudmailinFormat from CLOUDMAILIN_FORMAT env var", () => {
+    process.env.CLOUDMAILIN_FORMAT = "multipart";
+    const config = loadConfig();
+    expect(config.cloudmailinFormat).toBe("multipart");
   });
 
   it.each(Object.keys(required))("throws if %s is missing", (key) => {

@@ -27,10 +27,23 @@ vi.mock("../notifications/telegram", () => ({
 const config = {
   port: 3000,
   cloudmailinToken: "test-token",
+  cloudmailinFormat: "json" as const,
   curveSenderEmails: ["support@imaginecurve.com"],
   zenmoney: { accessToken: "zen-token", defaultAccountId: "acc-id" },
   telegram: { botToken: "bot-token", chatId: "123" },
 };
+
+function buildMultipartBody(fields: Record<string, string>, boundary: string): Buffer {
+  const lines: string[] = [];
+  for (const [name, value] of Object.entries(fields)) {
+    lines.push(`--${boundary}`);
+    lines.push(`Content-Disposition: form-data; name="${name}"`);
+    lines.push("");
+    lines.push(value);
+  }
+  lines.push(`--${boundary}--`);
+  return Buffer.from(lines.join("\r\n"));
+}
 
 const curveHtml = readFileSync(
   join(__dirname, "../email/parser/fixtures/curve-receipt.html"),
@@ -172,5 +185,48 @@ describe("POST /webhook", () => {
       merchant: "Starbucks",
       currency: "EUR",
     });
+  });
+});
+
+describe("POST /webhook (multipart format)", () => {
+  const boundary = "----TestBoundary123";
+  const multipartConfig = { ...config, cloudmailinFormat: "multipart" as const };
+
+  it("returns 200 and processes valid multipart payload", async () => {
+    const app = buildApp(multipartConfig);
+    const fields = {
+      "envelope[from]": "support@imaginecurve.com",
+      "envelope[to]": "target@cloudmailin.net",
+      "headers[subject]": "Curve Receipt: Purchase at Starbucks on 23 April 2026 for €8.09",
+      plain: "",
+      html: curveHtml,
+    };
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/webhook",
+      headers: {
+        authorization: validAuthHeader,
+        "content-type": `multipart/form-data; boundary=${boundary}`,
+      },
+      payload: buildMultipartBody(fields, boundary),
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ status: "ok" });
+  });
+
+  it("returns 401 for missing authorization in multipart request", async () => {
+    const app = buildApp(multipartConfig);
+    const fields = { "envelope[from]": "support@imaginecurve.com", plain: "", html: "" };
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/webhook",
+      headers: { "content-type": `multipart/form-data; boundary=${boundary}` },
+      payload: buildMultipartBody(fields, boundary),
+    });
+
+    expect(response.statusCode).toBe(401);
   });
 });

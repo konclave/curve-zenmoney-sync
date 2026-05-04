@@ -8,10 +8,13 @@ export interface ZenMoneyServiceConfig {
   defaultAccountId: string;
 }
 
+export type CloudmailinFormat = "json" | "multipart";
+
 export interface Config {
   port: number;
   zenmoney: ZenMoneyServiceConfig;
   cloudmailinToken: string;
+  cloudmailinFormat: CloudmailinFormat;
   telegram: TelegramConfig;
   curveSenderEmails: string[];
 }
@@ -38,6 +41,7 @@ export function loadConfig(): Config {
       defaultAccountId: process.env.ZENMONEY_DEFAULT_ACCOUNT_ID!,
     },
     cloudmailinToken: process.env.CLOUDMAILIN_CREDENTIALS!,
+    cloudmailinFormat: (process.env.CLOUDMAILIN_FORMAT ?? "multipart") as CloudmailinFormat,
     telegram: {
       botToken: process.env.TELEGRAM_BOT_TOKEN!,
       chatId: process.env.TELEGRAM_CHAT_ID!,
