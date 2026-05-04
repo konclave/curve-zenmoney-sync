@@ -44,6 +44,13 @@ const validPayload = {
   html: curveHtml,
 };
 
+describe("unknown routes", () => {
+  it("drops the connection without responding", async () => {
+    const app = buildApp(config);
+    await expect(app.inject({ method: "GET", url: "/unknown" })).rejects.toBeDefined();
+  });
+});
+
 describe("GET /health", () => {
   it("returns 200 with { status: ok }", async () => {
     const app = buildApp(config);

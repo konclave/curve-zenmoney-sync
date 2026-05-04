@@ -11,6 +11,11 @@ export function buildApp(config: Config, logger: AppLogger = appLogger) {
   const webhookLogger = logger.child({ source: "server" });
   const telegram = new TelegramNotifier(config.telegram, webhookLogger);
 
+  fastify.setNotFoundHandler((_request, reply) => {
+    reply.hijack();
+    reply.raw.destroy();
+  });
+
   fastify.get("/health", async () => ({ status: "ok" }));
 
   fastify.post("/webhook", async (request, reply) => {
