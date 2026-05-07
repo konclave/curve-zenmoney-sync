@@ -125,6 +125,8 @@ interface CurveTransactionInput {
 
 Currency symbol (e.g. `€`) is converted to ISO code via the existing `getCurrencyCode()` in `src/zenmoney/index.ts`.
 
+For same-currency transactions (the common case), the email shows only one amount. The parser defaults `originalAmount = amount` and `originalCurrency = currency` when no separate original amount is present — matching the existing behaviour in `zenmoney/index.ts`.
+
 ---
 
 ## Security
@@ -175,7 +177,8 @@ All configuration is via environment variables, read and validated at startup in
 | `PORT` | No (default: 3000) | HTTP server port |
 | `ZENMONEY_ACCESS_TOKEN` | Yes | ZenMoney OAuth2 access token |
 | `ZENMONEY_DEFAULT_ACCOUNT_ID` | Yes | Default ZenMoney account UUID |
-| `CLOUDMAILIN_TOKEN` | Yes | Shared secret for webhook validation |
+| `CLOUDMAILIN_CREDENTIALS` | Yes | Shared credentials for webhook validation |
+| `CLOUDMAILIN_FORMAT` | No (default: `multipart`) | Cloudmailin POST format: `json` or `multipart` — must match the target's "Post Format" setting |
 | `TELEGRAM_BOT_TOKEN` | Yes | Telegram bot token |
 | `TELEGRAM_CHAT_ID` | Yes | Telegram chat/channel ID |
 | `CURVE_SENDER_EMAIL` | No (default: support@imaginecurve.com) | Expected sender address |
