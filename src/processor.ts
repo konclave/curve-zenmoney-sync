@@ -16,7 +16,10 @@ export async function processEmail({
   telegram: TelegramNotifier;
   logger: AppLogger;
 }): Promise<void> {
-  if (!config.curveSenderEmails.includes(parsedEmail.from)) {
+  if (
+    Boolean(config.curveSenderEmails) &&
+    !config.curveSenderEmails.includes(parsedEmail.from)
+  ) {
     logger.warn(
       {
         event: "email.sender_unexpected",
