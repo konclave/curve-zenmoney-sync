@@ -46,7 +46,7 @@ export function loadConfig(): Config {
       botToken: process.env.TELEGRAM_BOT_TOKEN!,
       chatId: process.env.TELEGRAM_CHAT_ID!,
     },
-    curveSenderEmails: (process.env.CURVE_SENDER_EMAIL ?? "support@imaginecurve.com")
+    curveSenderEmails: (process.env.CURVE_SENDER_EMAIL ?? "")
       .split(",")
       .map((e) => e.trim())
       .filter(Boolean),

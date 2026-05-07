@@ -23,7 +23,7 @@ If a transaction can't be created (missing account, API error, etc.), the servic
 
 ## Prerequisites
 
-- **Curve card** — the service parses Curve receipt emails from `support@imaginecurve.com`
+- **Curve card** — the service parses Curve receipt emails from `support@imaginecurve.com` that are forwarded as a payload to the webhook or a payload of the serverless function trigger.
 - **ZenMoney account** — and an OAuth2 access token (get one at [zerro.app](https://zerro.app/))
 - **ZenMoney account ID** — the UUID of the account to sync transactions into (visible in ZenMoney settings)
 - **Cloudmailin account** — free tier covers ~200 emails/month ([cloudmailin.com](https://www.cloudmailin.com/))
@@ -82,7 +82,7 @@ Copy `.env.example` to `.env` and fill in the values below. The service will ref
 | `TELEGRAM_BOT_TOKEN` | Yes | — | Bot token from [@BotFather](https://t.me/BotFather) |
 | `TELEGRAM_CHAT_ID` | Yes | — | Chat ID to receive error alerts — get from [@userinfobot](https://t.me/userinfobot) |
 | `PORT` | No | `3000` | HTTP server port |
-| `CURVE_SENDER_EMAIL` | No | `support@imaginecurve.com` | Expected sender address for Curve receipts |
+| `CURVE_SENDER_EMAIL` | No | Empty string | Expected sender address for Curve receipts. Validation is skipped, if not set |
 
 ## Cloudmailin wiring
 

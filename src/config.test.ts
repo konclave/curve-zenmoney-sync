@@ -45,9 +45,9 @@ describe("loadConfig", () => {
     expect(config.port).toBe(8080);
   });
 
-  it("uses default curveSenderEmails when not set", () => {
+  it("set to an empty string curveSenderEmails when not set", () => {
     const config = loadConfig();
-    expect(config.curveSenderEmails).toEqual(["support@imaginecurve.com"]);
+    expect(config.curveSenderEmails).toEqual([]);
   });
 
   it("uses CURVE_SENDER_EMAIL from env when set", () => {
@@ -57,7 +57,8 @@ describe("loadConfig", () => {
   });
 
   it("parses multiple comma-separated emails from CURVE_SENDER_EMAIL", () => {
-    process.env.CURVE_SENDER_EMAIL = "one@example.com, two@example.com , three@example.com";
+    process.env.CURVE_SENDER_EMAIL =
+      "one@example.com, two@example.com , three@example.com";
     const config = loadConfig();
     expect(config.curveSenderEmails).toEqual([
       "one@example.com",
