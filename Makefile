@@ -8,7 +8,7 @@ RUNTIME         ?= nodejs22
 MEMORY          ?= 256MB
 TIMEOUT         ?= 30s
 
-.PHONY: help dev test build package deploy create-function create-trigger logs quadlet
+.PHONY: help dev test build package deploy create-function create-service-account create-trigger logs quadlet
 
 help:                       ## Show this help
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ {printf "  %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -43,12 +43,18 @@ deploy: package             ## Deploy new function version to Yandex Cloud
 		--environment ZENMONEY_DEFAULT_ACCOUNT_ID=$(ZENMONEY_DEFAULT_ACCOUNT_ID) \
 		--environment TELEGRAM_BOT_TOKEN=$(TELEGRAM_BOT_TOKEN) \
 		--environment TELEGRAM_CHAT_ID=$(TELEGRAM_CHAT_ID) \
-		--environment CURVE_SENDER_EMAIL=$(CURVE_SENDER_EMAIL)
 
 create-function:            ## One-time: create the YC function
 	yc serverless function create --name $(FUNCTION_NAME)
 
-create-trigger:             ## One-time: create email trigger pointing at the function
+create-service-account:     ## One-time: create trigger SA and grant function invoke rights
+	yc iam service-account get --name $(SERVICE_ACCOUNT) >/dev/null 2>&1 || \
+		yc iam service-account create --name $(SERVICE_ACCOUNT)
+	yc serverless function add-access-binding --name $(FUNCTION_NAME) \
+		--service-account-name $(SERVICE_ACCOUNT) \
+		--role functions.functionInvoker
+
+create-trigger: create-service-account ## One-time: create email trigger pointing at the function
 	yc serverless trigger create mail $(TRIGGER_NAME) \
 		--invoke-function-name $(FUNCTION_NAME) \
 		--invoke-function-service-account-name $(SERVICE_ACCOUNT) \
