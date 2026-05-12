@@ -18,6 +18,8 @@ export async function processEmail({
 }): Promise<void> {
   if (
     Boolean(config.curveSenderEmails) &&
+    Array.isArray(config.curveSenderEmails) &&
+    config.curveSenderEmails.length > 0 &&
     !config.curveSenderEmails.includes(parsedEmail.from)
   ) {
     logger.warn(
