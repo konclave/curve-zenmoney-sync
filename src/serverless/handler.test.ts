@@ -44,10 +44,10 @@ const validEvent = {
     {
       received_at: "2026-04-23T10:02:18Z",
       headers: [
-        { name: "From", value: "support@imaginecurve.com" },
+        { name: "From", values: ["support@imaginecurve.com"] },
         {
           name: "Subject",
-          value: "Curve Receipt: Purchase at Starbucks on 23 April 2026 for €8.09",
+          values: ["Curve Receipt: Purchase at Starbucks on 23 April 2026 for €8.09"],
         },
       ],
       message: curveHtml,
@@ -98,8 +98,8 @@ describe("handler", () => {
         {
           ...validEvent.messages[0],
           headers: [
-            { name: "From", value: "spam@example.com" },
-            { name: "Subject", value: "Some email" },
+            { name: "From", values: ["spam@example.com"] },
+            { name: "Subject", values: ["Some email"] },
           ],
         },
       ],

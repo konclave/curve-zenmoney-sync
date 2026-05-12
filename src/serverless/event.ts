@@ -1,14 +1,34 @@
 import type { ParsedEmail } from "../email/providers/types";
 
-export interface EmailTriggerMessage {
-  received_at?: string;
-  headers?: Array<{ name: string; value: string }>;
-  message?: string;
-  attachments?: { bucket_id?: string; keys?: string[] };
+export interface YandexEmailTriggerHeader {
+  name: string;
+  values: string[];
 }
 
-export interface EmailTriggerEvent {
-  messages: EmailTriggerMessage[];
+export interface YandexEmailTriggerAttachments {
+  bucket_id?: string;
+  keys?: string[];
+}
+
+export interface YandexEmailTriggerMessage {
+  received_at?: string;
+  headers?: YandexEmailTriggerHeader[];
+  message?: string;
+  attachments?: YandexEmailTriggerAttachments;
+}
+
+export interface YandexEmailTriggerEvent {
+  messages: YandexEmailTriggerMessage[];
+}
+
+function getHeaderValue(headers: YandexEmailTriggerHeader[], name: string): string {
+  const header = headers.find((entry) => entry.name.toLowerCase() === name.toLowerCase());
+
+  if (!Array.isArray(header?.values) || typeof header.values[0] !== "string") {
+    return "";
+  }
+
+  return header.values[0];
 }
 
 export function parseEmailTriggerEvent(event: unknown): ParsedEmail {
@@ -26,19 +46,17 @@ export function parseEmailTriggerEvent(event: unknown): ParsedEmail {
   if (rawMsg === null || typeof rawMsg !== "object") {
     throw new Error("Email trigger event message is not an object");
   }
-  const msg = rawMsg as EmailTriggerMessage;
+  const msg = rawMsg as YandexEmailTriggerMessage;
 
   const headers = msg.headers ?? [];
 
-  const fromHeader = headers.find((h) => h.name.toLowerCase() === "from");
-  let from = fromHeader?.value ?? "";
+  let from = getHeaderValue(headers, "from");
   const angleMatch = from.match(/<([^>]+)>/);
   if (angleMatch) {
     from = angleMatch[1];
   }
 
-  const subjectHeader = headers.find((h) => h.name.toLowerCase() === "subject");
-  const subject = subjectHeader?.value ?? "";
+  const subject = getHeaderValue(headers, "subject");
 
   const html = msg.message ?? "";
 

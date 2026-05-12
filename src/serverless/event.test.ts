@@ -7,8 +7,8 @@ describe("parseEmailTriggerEvent", () => {
       messages: [
         {
           headers: [
-            { name: "From", value: "support@imaginecurve.com" },
-            { name: "Subject", value: "Your Curve receipt" },
+            { name: "From", values: ["support@imaginecurve.com"] },
+            { name: "Subject", values: ["Your Curve receipt"] },
           ],
           message: "<html><body>Receipt content</body></html>",
         },
@@ -28,8 +28,8 @@ describe("parseEmailTriggerEvent", () => {
       messages: [
         {
           headers: [
-            { name: "From", value: "Curve Support <support@imaginecurve.com>" },
-            { name: "Subject", value: "Test" },
+            { name: "From", values: ["Curve Support <support@imaginecurve.com>"] },
+            { name: "Subject", values: ["Test"] },
           ],
           message: "<p>Hello</p>",
         },
@@ -59,7 +59,7 @@ describe("parseEmailTriggerEvent", () => {
     const event = {
       messages: [
         {
-          headers: [{ name: "From", value: "support@imaginecurve.com" }],
+          headers: [{ name: "From", values: ["support@imaginecurve.com"] }],
           message: "<p>Hello</p>",
         },
       ],
@@ -75,8 +75,8 @@ describe("parseEmailTriggerEvent", () => {
       messages: [
         {
           headers: [
-            { name: "From", value: "support@imaginecurve.com" },
-            { name: "Subject", value: "Test" },
+            { name: "From", values: ["support@imaginecurve.com"] },
+            { name: "Subject", values: ["Test"] },
           ],
         },
       ],
@@ -89,6 +89,25 @@ describe("parseEmailTriggerEvent", () => {
 
   it("throws on non-object event", () => {
     expect(() => parseEmailTriggerEvent(null)).toThrow("Invalid email trigger event");
+  });
+
+  it("treats malformed header values as absent data", () => {
+    const event = {
+      messages: [
+        {
+          headers: [
+            { name: "From", values: [123] },
+            { name: "Subject", values: "not-an-array" },
+          ],
+          message: "<p>Hello</p>",
+        },
+      ],
+    };
+
+    const result = parseEmailTriggerEvent(event);
+
+    expect(result.from).toBe("");
+    expect(result.subject).toBe("");
   });
 
   it("throws on missing messages array", () => {
