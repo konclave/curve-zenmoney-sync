@@ -22,10 +22,12 @@ vi.mock("../zenmoney/index", () => ({
 }));
 
 vi.mock("../notifications/telegram", () => ({
-  TelegramNotifier: vi.fn().mockImplementation(() => ({
-    warn: vi.fn().mockResolvedValue(undefined),
-    error: vi.fn().mockResolvedValue(undefined),
-  })),
+  TelegramNotifier: vi.fn().mockImplementation(function TelegramNotifierMock() {
+    return {
+      warn: vi.fn().mockResolvedValue(undefined),
+      error: vi.fn().mockResolvedValue(undefined),
+    };
+  }),
 }));
 
 import { createHandler } from "./handler";
@@ -53,21 +55,29 @@ const validEvent = {
   ],
 };
 
+function createLogDestination(logLines: string[]) {
+  return {
+    write(line: string) {
+      logLines.push(line);
+    },
+  };
+}
+
 describe("handler", () => {
   let telegramInstance: { warn: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
   let handler: ReturnType<typeof createHandler>;
-  let logWriteSpy: ReturnType<typeof vi.fn>;
+  let logLines: string[];
 
   beforeEach(() => {
     vi.clearAllMocks();
-    logWriteSpy = vi.fn();
+    logLines = [];
     handler = createHandler(
       {
         zenmoney: { accessToken: "zen-token", defaultAccountId: "acc-id" },
         telegram: { botToken: "bot-token", chatId: "123" },
         curveSenderEmails: ["support@imaginecurve.com"],
       },
-      createAppLogger({ write: logWriteSpy }),
+      createAppLogger(createLogDestination(logLines)),
     );
     telegramInstance = vi.mocked(TelegramNotifier).mock.results[0].value as {
       warn: ReturnType<typeof vi.fn>;
@@ -156,8 +166,8 @@ describe("handler", () => {
   it("emits info log for successful serverless processing", async () => {
     await handler(validEvent);
 
-    const transactionCreatedLog = logWriteSpy.mock.calls
-      .map(([line]) => JSON.parse(line))
+    const transactionCreatedLog = logLines
+      .map((line) => JSON.parse(line))
       .find((entry) => entry.event === "transaction.created");
 
     expect(transactionCreatedLog).toMatchObject({

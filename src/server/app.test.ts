@@ -18,10 +18,12 @@ vi.mock("../zenmoney/index", () => ({
 }));
 
 vi.mock("../notifications/telegram", () => ({
-  TelegramNotifier: vi.fn().mockImplementation(() => ({
-    warn: vi.fn().mockResolvedValue(undefined),
-    error: vi.fn().mockResolvedValue(undefined),
-  })),
+  TelegramNotifier: vi.fn().mockImplementation(function TelegramNotifierMock() {
+    return {
+      warn: vi.fn().mockResolvedValue(undefined),
+      error: vi.fn().mockResolvedValue(undefined),
+    };
+  }),
 }));
 
 const config = {
@@ -57,6 +59,14 @@ const validPayload = {
   html: curveHtml,
 };
 
+function createLogDestination(logLines: string[]) {
+  return {
+    write(line: string) {
+      logLines.push(line);
+    },
+  };
+}
+
 describe("unknown routes", () => {
   it("drops the connection without responding", async () => {
     const app = buildApp(config);
@@ -78,12 +88,12 @@ const validAuthHeader = `Basic ${Buffer.from(config.cloudmailinToken).toString("
 describe("POST /webhook", () => {
   let app: ReturnType<typeof buildApp>;
   let telegramInstance: { warn: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
-  let logWriteSpy: ReturnType<typeof vi.fn>;
+  let logLines: string[];
 
   beforeEach(() => {
     vi.clearAllMocks();
-    logWriteSpy = vi.fn();
-    app = buildApp(config, createAppLogger({ write: logWriteSpy }));
+    logLines = [];
+    app = buildApp(config, createAppLogger(createLogDestination(logLines)));
     telegramInstance = vi.mocked(TelegramNotifier).mock.results[0].value;
   });
 
@@ -176,8 +186,8 @@ describe("POST /webhook", () => {
 
     expect(response.statusCode).toBe(200);
 
-    const transactionCreatedLog = logWriteSpy.mock.calls
-      .map(([line]) => JSON.parse(line))
+    const transactionCreatedLog = logLines
+      .map((line) => JSON.parse(line))
       .find((entry) => entry.event === "transaction.created");
 
     expect(transactionCreatedLog).toMatchObject({
